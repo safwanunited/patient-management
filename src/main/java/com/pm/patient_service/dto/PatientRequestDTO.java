@@ -1,8 +1,8 @@
 package com.pm.patient_service.dto;
 
+import com.pm.patient_service.dto.validators.CreatePatientValidationGroup;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class PatientRequestDTO {
@@ -20,38 +20,38 @@ public class PatientRequestDTO {
     @NotBlank(message = "DOB is required")
     private String dateOfBirth;
 
-    @NotNull(message = "Registered Date is Required")
+    @NotBlank(groups = CreatePatientValidationGroup.class, message = "Registered Date is Required")
     private String registeredDate;
 
-    public String getName() {
+    public @NotBlank(message = "Name is required") @Size(max = 100, message = "Name Cannot Exceed 100 characters") String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotBlank(message = "Name is required") @Size(max = 100, message = "Name Cannot Exceed 100 characters") String name) {
         this.name = name;
     }
 
-    public String getEmail() {
+    public @NotBlank(message = "Email is required") @Email(message = "Email should be valid") String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(@NotBlank(message = "Email is required") @Email(message = "Email should be valid") String email) {
         this.email = email;
     }
 
-    public String getAddress() {
+    public @NotBlank(message = "Address is required") String getAddress() {
         return address;
     }
 
-    public void setAddress(String address) {
+    public void setAddress(@NotBlank(message = "Address is required") String address) {
         this.address = address;
     }
 
-    public String getDateOfBirth() {
+    public @NotBlank(message = "DOB is required") String getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(String dateOfBirth) {
+    public void setDateOfBirth(@NotBlank(message = "Date of birth Required") String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
