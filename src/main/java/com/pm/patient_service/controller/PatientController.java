@@ -51,4 +51,11 @@ public class PatientController {
         patientService.deletePatient(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/deactivate")
+    @Operation(summary = "Deactivate a Patient - patient remains in DB but cannot be updated")
+    public ResponseEntity<Void> deactivatePatient(@PathVariable UUID id){
+        patientService.deactivate(id);
+        return ResponseEntity.noContent().build();
+    }
 }

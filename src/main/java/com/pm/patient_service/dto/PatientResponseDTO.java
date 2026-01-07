@@ -1,6 +1,7 @@
 package com.pm.patient_service.dto;
 
 import jakarta.validation.constraints.NotNull;
+import com.pm.patient_service.model.PatientStatus;
 
 public class PatientResponseDTO {
     @NotNull
@@ -17,6 +18,10 @@ public class PatientResponseDTO {
 
     @NotNull
     private String dateOfBirth;
+
+    private PatientStatus status;
+
+    private String deactivatedDate;
 
     public String getId() {
         return id;
@@ -56,5 +61,21 @@ public class PatientResponseDTO {
 
     public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public PatientStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PatientStatus status) {
+        this.status = status;
+    }
+
+    public String getDeactivatedDate() {
+        return deactivatedDate;
+    }
+
+    public void setDeactivatedDate(String deactivatedDate) {
+        this.deactivatedDate = deactivatedDate;
     }
 }

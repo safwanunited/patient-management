@@ -1,9 +1,6 @@
 package com.pm.patient_service.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 
@@ -35,6 +32,30 @@ public class Patient {
 
     @NotNull
     private LocalDate registeredDate;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PatientStatus status = PatientStatus.ACTIVE;
+
+    @Column(name = "deactivated_date")
+    private LocalDate deactivatedDate;
+
+    public PatientStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PatientStatus status) {
+        this.status = status;
+    }
+
+    public LocalDate getDeactivatedDate() {
+        return deactivatedDate;
+    }
+
+    public void setDeactivatedDate(LocalDate deactivatedDate) {
+        this.deactivatedDate = deactivatedDate;
+    }
 
     public UUID getId() {
         return id;
