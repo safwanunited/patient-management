@@ -1,7 +1,7 @@
 # Implementation Plan: Appointment Scheduling and Retrieval
 
-**Branch**: `002-appointment-scheduling` | **Date**: 2026-05-21 | **Spec**: [spec.md](spec.md)
-**Input**: Feature specification from `/specs/002-appointment-scheduling/spec.md`
+**Branch**: `1-appointment-scheduling` | **Date**: 2026-05-21 | **Spec**: [spec.md](spec.md)
+**Input**: Feature specification from `/specs/1-appointment-scheduling/spec.md`
 
 ## Summary
 
@@ -46,7 +46,7 @@ through outbound port interfaces implemented in a new infrastructure layer.
 ### Documentation (this feature)
 
 ```text
-specs/002-appointment-scheduling/
+specs/1-appointment-scheduling/
 ├── plan.md              # This file
 ├── research.md          # Phase 0 output
 ├── data-model.md        # Phase 1 output

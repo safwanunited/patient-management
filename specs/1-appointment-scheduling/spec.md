@@ -1,6 +1,6 @@
 # Feature Specification: Appointment Scheduling and Retrieval
 
-**Feature Branch**: `002-appointment-scheduling`  
+**Feature Branch**: `1-appointment-scheduling`  
 **Created**: 2026-05-21  
 **Status**: Draft  
 **Input**: User description: "As a clinic receptionist, I want to seamlessly book, reschedule, cancel, and retrieve patient appointments with specific doctors. This ensures the clinic schedule remains optimized and conflict-free, allowing us to provide patients with timely care and reduce administrative overhead."
