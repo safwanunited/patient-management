@@ -1,6 +1,6 @@
 # Research: Appointment Scheduling and Retrieval
 
-**Feature**: `002-appointment-scheduling`  
+**Feature**: `1-appointment-scheduling`  
 **Date**: 2026-05-21  
 **Status**: Complete — all NEEDS CLARIFICATION items resolved
 
