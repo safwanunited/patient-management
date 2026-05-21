@@ -35,7 +35,7 @@ public class Patient {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255) NOT NULL DEFAULT 'ACTIVE'")
     private PatientStatus status = PatientStatus.ACTIVE;
 
     @Column(name = "deactivated_date")
