@@ -31,7 +31,15 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+| # | Gate | Status |
+|---|------|--------|
+| 1 | TDD: All new code paths have a failing test written before implementation | ☐ |
+| 2 | Clean Code: No methods > 40 lines; all names intention-revealing; no dead code | ☐ |
+| 3 | Hexagonal: Domain/application layer contains zero Spring/JPA/framework annotations | ☐ |
+| 4 | Dependency rule: No infrastructure import present in domain or application layer | ☐ |
+| 5 | Constructor injection used throughout application layer; no `@Autowired` fields | ☐ |
+| 6 | Unit tests cover domain + use cases with no Spring context loaded | ☐ |
+| 7 | Adapter/integration tests use `@WebMvcTest` or Testcontainers, not the full context | ☐ |
 
 ## Project Structure
 
