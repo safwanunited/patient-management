@@ -1,0 +1,329 @@
+openapi: "3.0.3"
+info:
+  title: Appointment Scheduling API
+  description: >
+    REST API for booking, retrieving, cancelling, and rescheduling patient
+    appointments within the patient-service. All timestamps are ISO-8601
+    local date-times (UTC assumed; no timezone offset stored).
+  version: "1.0.0"
+  contact:
+    name: Patient Service Team
+
+servers:
+  - url: http://localhost:4000
+    description: Local development server
+
+tags:
+  - name: Appointments
+    description: Appointment lifecycle management
+
+paths:
+
+  /appointments:
+    post:
+      tags: [Appointments]
+      summary: Book a new appointment
+      description: >
+        Creates a new appointment for an active patient with a specified doctor.
+        Validates that the patient is ACTIVE, the start time is in the future,
+        and the doctor has no overlapping SCHEDULED appointment within the 30-minute
+        window. Returns the created appointment with SCHEDULED status.
+      operationId: bookAppointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentRequest'
+            example:
+              patientId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+              doctorId:  "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+              appointmentStart: "2026-06-01T10:00:00"
+      responses:
+        "201":
+          description: Appointment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResponse'
+              example:
+                id: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                patientId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                doctorId:  "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                appointmentStart: "2026-06-01T10:00:00"
+                appointmentEnd:   "2026-06-01T10:30:00"
+                status: "SCHEDULED"
+                createdAt: "2026-05-21T09:00:00"
+                updatedAt: "2026-05-21T09:00:00"
+        "400":
+          description: >
+            Bad Request — missing required field, malformed UUID, or
+            appointmentStart is not in the future.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 400
+                error: "Bad Request"
+                message: "appointmentStart must be a future date/time"
+        "409":
+          description: >
+            Conflict — the doctor already has a SCHEDULED appointment that
+            overlaps the requested 30-minute window.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 409
+                error: "Conflict"
+                message: "Doctor already has an appointment overlapping the requested time slot"
+        "422":
+          description: >
+            Unprocessable Entity — the referenced patient exists but is not ACTIVE.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 422
+                error: "Unprocessable Entity"
+                message: "Patient with id 3fa85f64-... is not ACTIVE"
+
+  /appointments/{id}:
+    get:
+      tags: [Appointments]
+      summary: Get appointment by ID
+      description: Returns the full appointment record for the given appointment ID.
+      operationId: getAppointment
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      responses:
+        "200":
+          description: Appointment found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResponse'
+        "400":
+          description: Malformed appointment ID (not a valid UUID).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: No appointment found with the given ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 404
+                error: "Not Found"
+                message: "Appointment not found with id: d290f1ee-6c54-4b01-90e6-d701748f0851"
+
+  /appointments/{id}/cancel:
+    patch:
+      tags: [Appointments]
+      summary: Cancel a SCHEDULED appointment
+      description: >
+        Transitions a SCHEDULED appointment to CANCELLED status. The appointment
+        record is preserved with the updated status and timestamp. Attempting to
+        cancel an already-CANCELLED appointment returns 409 Conflict.
+      operationId: cancelAppointment
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      responses:
+        "200":
+          description: Appointment successfully cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResponse'
+              example:
+                id: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                patientId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                doctorId:  "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                appointmentStart: "2026-06-01T10:00:00"
+                appointmentEnd:   "2026-06-01T10:30:00"
+                status: "CANCELLED"
+                createdAt: "2026-05-21T09:00:00"
+                updatedAt: "2026-05-21T09:15:00"
+        "404":
+          description: No appointment found with the given ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "409":
+          description: Appointment is already CANCELLED.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 409
+                error: "Conflict"
+                message: "Appointment d290f1ee-... is already CANCELLED"
+
+  /appointments/{id}/reschedule:
+    patch:
+      tags: [Appointments]
+      summary: Reschedule a SCHEDULED appointment
+      description: >
+        Moves a SCHEDULED appointment to a new future start time. Applies all
+        booking-time validation rules: the new start must be in the future, and the
+        doctor must have no overlapping appointment in the new 30-minute window
+        (excluding the appointment being rescheduled itself). Returns the updated
+        appointment with the new start and end times.
+      operationId: rescheduleAppointment
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RescheduleRequest'
+            example:
+              newAppointmentStart: "2026-06-02T14:00:00"
+      responses:
+        "200":
+          description: Appointment successfully rescheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResponse'
+              example:
+                id: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                patientId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                doctorId:  "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                appointmentStart: "2026-06-02T14:00:00"
+                appointmentEnd:   "2026-06-02T14:30:00"
+                status: "SCHEDULED"
+                createdAt: "2026-05-21T09:00:00"
+                updatedAt: "2026-05-21T09:20:00"
+        "400":
+          description: >
+            Bad Request — newAppointmentStart is missing, malformed, or
+            not in the future.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: No appointment found with the given ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "409":
+          description: >
+            Conflict — the doctor already has a SCHEDULED appointment that
+            overlaps the new 30-minute window.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "422":
+          description: Appointment is not in SCHEDULED status and cannot be rescheduled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 422
+                error: "Unprocessable Entity"
+                message: "Only SCHEDULED appointments can be rescheduled"
+
+components:
+
+  parameters:
+    AppointmentId:
+      name: id
+      in: path
+      required: true
+      description: UUID of the appointment
+      schema:
+        type: string
+        format: uuid
+      example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+
+  schemas:
+
+    AppointmentRequest:
+      type: object
+      required: [patientId, doctorId, appointmentStart]
+      properties:
+        patientId:
+          type: string
+          format: uuid
+          description: UUID of the patient (must be ACTIVE)
+        doctorId:
+          type: string
+          format: uuid
+          description: UUID of the doctor
+        appointmentStart:
+          type: string
+          format: date-time
+          description: >
+            ISO-8601 local date-time for appointment start. Must be strictly
+            in the future. appointmentEnd is computed as start + 30 minutes.
+
+    RescheduleRequest:
+      type: object
+      required: [newAppointmentStart]
+      properties:
+        newAppointmentStart:
+          type: string
+          format: date-time
+          description: >
+            New ISO-8601 local date-time for the appointment. Must be strictly
+            in the future and conflict-free for the doctor.
+
+    AppointmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        patientId:
+          type: string
+          format: uuid
+        doctorId:
+          type: string
+          format: uuid
+        appointmentStart:
+          type: string
+          format: date-time
+        appointmentEnd:
+          type: string
+          format: date-time
+          description: Always appointmentStart + 30 minutes
+        status:
+          $ref: '#/components/schemas/AppointmentStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AppointmentStatus:
+      type: string
+      enum: [SCHEDULED, CANCELLED]
+      description: Lifecycle status of the appointment
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+        error:
+          type: string
+          description: HTTP reason phrase
+        message:
+          type: string
+          description: Human-readable description of the error
